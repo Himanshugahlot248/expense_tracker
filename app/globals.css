@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent-glow: rgba(124, 92, 255, 0.35);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background: #0a0a0f;
+  color: #e7e7ef;
+}
+
+body {
+  background-image:
+    radial-gradient(60vw 60vw at 85% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(50vw 50vw at -10% 110%, rgba(6, 182, 212, 0.12), transparent 60%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4f;
+}
+
+@layer components {
+  .glass {
+    @apply bg-bg-card/70 backdrop-blur-xl border border-white/5;
+  }
+  .card {
+    @apply glass rounded-2xl shadow-card;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3
+      font-medium text-white transition-all duration-200
+      hover:bg-accent-soft hover:shadow-glow active:scale-[0.98]
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/10
+      px-4 py-2.5 text-sm font-medium text-white/80 transition-all duration-200
+      hover:bg-white/5 hover:text-white active:scale-[0.98];
+  }
+  .input {
+    @apply w-full rounded-xl border border-white/10 bg-bg-soft/80 px-4 py-3 text-white
+      placeholder:text-white/30 outline-none transition-all duration-200
+      focus:border-accent/60 focus:ring-2 focus:ring-accent/30;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-white/60;
+  }
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #1c1c28;
+  border-radius: 0.75rem;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
