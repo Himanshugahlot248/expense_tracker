@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # NEXT_PUBLIC_* vars are inlined into the client bundle by design.
+  # The Supabase anon key is a PUBLISHABLE key (protected by RLS), not a
+  # secret like the service_role key — so we exempt these two from
+  # Netlify's secrets scanner to avoid false-positive build failures.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY"
+
+# The official Next.js runtime (auto-installed by Netlify, pinned here).
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
