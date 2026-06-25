@@ -1,11 +1,12 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata = {
-  title: "Payment Tracker — Track every rupee",
+  title: "Saving Tracker — Track every rupee",
   description:
     "A modern, month-wise expense and savings tracker. Categorize spends, see where your money goes, and grow your savings.",
 };
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
+        <AnimatedBackground />
         {children}
         <Toaster
           theme="dark"

@@ -2,7 +2,6 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { motion } from "framer-motion";
-import { CATEGORY_MAP } from "@/lib/constants";
 import { formatINR } from "@/lib/format";
 import EmptyState from "./ui/EmptyState";
 import { PieChart as PieIcon } from "lucide-react";
@@ -18,8 +17,9 @@ function CustomTooltip({ active, payload }) {
   );
 }
 
-export default function CategoryDonut({ data, total }) {
+export default function CategoryDonut({ data, total, colorOf }) {
   const slices = data.filter((d) => d.value > 0);
+  const color = (name) => colorOf?.(name) || "#7c5cff";
 
   return (
     <motion.div
@@ -50,7 +50,7 @@ export default function CategoryDonut({ data, total }) {
                 stroke="none"
               >
                 {slices.map((s) => (
-                  <Cell key={s.name} fill={CATEGORY_MAP[s.name]?.color || "#7c5cff"} />
+                  <Cell key={s.name} fill={color(s.name)} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -72,7 +72,7 @@ export default function CategoryDonut({ data, total }) {
             >
               <span
                 className="h-2.5 w-2.5 rounded-full"
-                style={{ background: CATEGORY_MAP[s.name]?.color }}
+                style={{ background: color(s.name) }}
               />
               {s.name}
             </div>

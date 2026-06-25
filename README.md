@@ -1,4 +1,4 @@
-# 💸 Payment Tracker
+# 💸 Saving Tracker
 
 A modern, month-wise expense & savings tracker built with **Next.js 14**, **Tailwind CSS**, **Framer Motion**, **Recharts**, and **Supabase**. Phone-OTP login, per-user data isolation, animated UI, skeleton loaders, and toasts.
 

@@ -108,7 +108,7 @@ export default function LoginPage() {
           >
             <Wallet className="h-8 w-8 text-white" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight">Payment Tracker</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Saving Tracker</h1>
           <p className="mt-1 text-sm text-white/50">
             Track every rupee, month by month.
           </p>

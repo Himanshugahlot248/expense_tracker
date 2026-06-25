@@ -32,7 +32,7 @@ export default function TopBar({ phone }) {
             <Wallet className="h-5 w-5 text-white" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold">Payment Tracker</p>
+            <p className="text-sm font-semibold">Saving Tracker</p>
             <p className="text-xs text-white/40">{phone}</p>
           </div>
         </motion.div>

@@ -1,23 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, Check } from "lucide-react";
+import { X, Loader2, Check, Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import { CATEGORIES, UPI_APPS } from "@/lib/constants";
+import { UPI_APPS } from "@/lib/constants";
+import { getIcon } from "@/lib/icons";
 import { formatINR, todayISO } from "@/lib/format";
 
-export default function AddEntryModal({ open, onClose, onSubmit }) {
+export default function AddEntryModal({ open, onClose, onSubmit, categories, onManageCategories }) {
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0].key);
+  const [category, setCategory] = useState("");
   const [upiApp, setUpiApp] = useState(UPI_APPS[0].key);
   const [note, setNote] = useState("");
   const [date, setDate] = useState(todayISO());
   const [saving, setSaving] = useState(false);
 
+  // Keep selected category valid as the user's category list changes.
+  useEffect(() => {
+    if (open && categories.length && !categories.some((c) => c.name === category)) {
+      setCategory(categories[0].name);
+    }
+  }, [open, categories, category]);
+
   function reset() {
     setAmount("");
-    setCategory(CATEGORIES[0].key);
+    setCategory(categories[0]?.name || "");
     setUpiApp(UPI_APPS[0].key);
     setNote("");
     setDate(todayISO());
@@ -96,16 +104,25 @@ export default function AddEntryModal({ open, onClose, onSubmit }) {
               </div>
 
               <div>
-                <label className="label">Category</label>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label className="label mb-0">Category</label>
+                  <button
+                    type="button"
+                    onClick={onManageCategories}
+                    className="flex items-center gap-1 text-xs text-accent-soft transition-colors hover:text-accent"
+                  >
+                    <Settings2 className="h-3.5 w-3.5" /> Manage
+                  </button>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {CATEGORIES.map((c) => {
-                    const Icon = c.icon;
-                    const active = category === c.key;
+                  {categories.map((c) => {
+                    const Icon = getIcon(c.icon);
+                    const active = category === c.name;
                     return (
                       <button
-                        key={c.key}
+                        key={c.id}
                         type="button"
-                        onClick={() => setCategory(c.key)}
+                        onClick={() => setCategory(c.name)}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition-all ${
                           active
                             ? "border-transparent text-white"
@@ -114,7 +131,7 @@ export default function AddEntryModal({ open, onClose, onSubmit }) {
                         style={active ? { background: `${c.color}26`, borderColor: c.color } : {}}
                       >
                         <Icon className="h-4 w-4 shrink-0" style={{ color: c.color }} />
-                        <span className="truncate">{c.label}</span>
+                        <span className="truncate">{c.name}</span>
                       </button>
                     );
                   })}

@@ -2,11 +2,12 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, Loader2, Receipt } from "lucide-react";
-import { CATEGORY_MAP, UPI_MAP } from "@/lib/constants";
+import { UPI_MAP, FALLBACK_CATEGORY } from "@/lib/constants";
+import { getIcon } from "@/lib/icons";
 import { formatINR } from "@/lib/format";
 import EmptyState from "./ui/EmptyState";
 
-export default function TransactionList({ items, onDelete, deletingId }) {
+export default function TransactionList({ items, onDelete, deletingId, catMap }) {
   if (!items.length) {
     return (
       <div className="card">
@@ -28,8 +29,8 @@ export default function TransactionList({ items, onDelete, deletingId }) {
       <ul className="divide-y divide-white/5">
         <AnimatePresence initial={false}>
           {items.map((t) => {
-            const meta = CATEGORY_MAP[t.category] || CATEGORY_MAP.Other;
-            const Icon = meta.icon;
+            const meta = catMap?.[t.category] || FALLBACK_CATEGORY;
+            const Icon = getIcon(meta.icon);
             const upi = UPI_MAP[t.upi_app];
             return (
               <motion.li
