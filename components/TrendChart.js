@@ -70,7 +70,7 @@ export default function TrendChart({ data }) {
               tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => formatINR(v, { compact: true })}
+              tickFormatter={(v) => formatINR(v)}
               width={48}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />

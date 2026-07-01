@@ -345,7 +345,7 @@ export default function DashboardPage() {
             <StatCard
               index={0}
               label="Salary"
-              value={formatINR(salary, { compact: true })}
+              value={formatINR(salary)}
               icon={Wallet}
               accent="#7c5cff"
               sub={salary > 0 ? "Received this month" : "Not set yet"}
@@ -353,7 +353,7 @@ export default function DashboardPage() {
             <StatCard
               index={1}
               label="Total spent"
-              value={formatINR(totalSpent, { compact: true })}
+              value={formatINR(totalSpent)}
               icon={TrendingDown}
               accent="#ef4444"
               sub={`${expenses.length} expenses`}
@@ -361,7 +361,7 @@ export default function DashboardPage() {
             <StatCard
               index={2}
               label="Saved"
-              value={overspent ? "—" : formatINR(saved, { compact: true })}
+              value={overspent ? "—" : formatINR(saved)}
               icon={PiggyBank}
               accent={overspent ? "#ef4444" : "#22c55e"}
               sub={overspent ? "Over budget!" : "Salary − expenses"}

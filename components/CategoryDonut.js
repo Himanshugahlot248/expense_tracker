@@ -58,7 +58,7 @@ export default function CategoryDonut({ data, total, colorOf }) {
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-xs text-white/40">Total spent</span>
-            <span className="text-xl font-bold">{formatINR(total, { compact: true })}</span>
+            <span className="text-xl font-bold">{formatINR(total)}</span>
           </div>
         </div>
       )}
