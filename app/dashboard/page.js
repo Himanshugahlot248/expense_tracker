@@ -11,10 +11,12 @@ import { formatINR, monthKey, monthRange, recentMonths, monthLabel } from "@/lib
 import StatCard from "@/components/StatCard";
 import MonthPicker from "@/components/MonthPicker";
 import TransactionList from "@/components/TransactionList";
+import TransactionsToolbar from "@/components/TransactionsToolbar";
 import AddEntryModal from "@/components/AddEntryModal";
 import SalaryModal from "@/components/SalaryModal";
 import CategoryManager from "@/components/CategoryManager";
 import { DashboardSkeleton, ChartSkeleton } from "@/components/ui/Skeletons";
+import { exportExpensesCSV } from "@/lib/csv";
 
 const CategoryDonut = dynamic(() => import("@/components/CategoryDonut"), {
   ssr: false,
@@ -37,6 +39,10 @@ export default function DashboardPage() {
   const [salaryOpen, setSalaryOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [upiFilter, setUpiFilter] = useState("all");
 
   const cache = useRef(new Map());
 
@@ -178,6 +184,28 @@ export default function DashboardPage() {
     [expenses]
   );
 
+  const filteredTransactions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return transactions.filter((t) => {
+      if (categoryFilter !== "all" && t.category !== categoryFilter) return false;
+      if (upiFilter !== "all" && t.upi_app !== upiFilter) return false;
+      if (q && !`${t.category} ${t.note || ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [transactions, query, categoryFilter, upiFilter]);
+
+  const isFiltered = query !== "" || categoryFilter !== "all" || upiFilter !== "all";
+  const lastEntry = transactions[0] || null;
+
+  // Highest-spending category this month (for the "Total spent" card).
+  const topCategory = useMemo(() => {
+    let best = null;
+    for (const c of byCategory) {
+      if (c.value > 0 && (!best || c.value > best.value)) best = c;
+    }
+    return best;
+  }, [byCategory]);
+
   function patchCache(key, patch) {
     const prev = cache.current.get(key) || { expenses: [], salary: 0 };
     cache.current.set(key, { ...prev, ...patch });
@@ -192,8 +220,39 @@ export default function DashboardPage() {
   }
 
   // ---- expense CRUD ----
-  async function handleAdd(entry) {
+  async function handleSave(entry) {
     const user = await getUser();
+
+    // Edit path
+    if (entry.id) {
+      const { data, error } = await supabase
+        .from("expenses")
+        .update({
+          amount: entry.amount,
+          category: entry.category,
+          upi_app: entry.upi_app,
+          note: entry.note,
+          spent_at: entry.date,
+        })
+        .eq("id", entry.id)
+        .select()
+        .single();
+      if (error) throw error;
+
+      // If the date moved to another month, drop it from this view.
+      const stillThisMonth = data.spent_at.slice(0, 7) === month;
+      cache.current.clear();
+      setExpenses((prev) =>
+        stillThisMonth
+          ? prev.map((x) => (x.id === data.id ? data : x))
+          : prev.filter((x) => x.id !== data.id)
+      );
+      setEditing(null);
+      toast.success("Expense updated");
+      return;
+    }
+
+    // Insert path
     const { data, error } = await supabase
       .from("expenses")
       .insert({
@@ -213,6 +272,20 @@ export default function DashboardPage() {
     if (cached) patchCache(targetMonth, { expenses: [data, ...cached.expenses] });
     if (targetMonth === month) setExpenses((prev) => [data, ...prev]);
     toast.success("Expense added");
+  }
+
+  function openAdd() {
+    setEditing(null);
+    setModalOpen(true);
+  }
+  function openEdit(t) {
+    setEditing(t);
+    setModalOpen(true);
+  }
+  function handleExport() {
+    if (!filteredTransactions.length) return;
+    exportExpensesCSV(filteredTransactions, month);
+    toast.success("CSV downloaded");
   }
 
   async function handleDelete(t) {
@@ -311,7 +384,7 @@ export default function DashboardPage() {
             <Pencil className="h-4 w-4" />
             <span>{salary > 0 ? "Edit salary" : "Set salary"}</span>
           </button>
-          <button onClick={() => setModalOpen(true)} className="btn-primary">
+          <button onClick={openAdd} className="btn-primary">
             <Plus className="h-5 w-5" /> <span className="hidden sm:inline">Add expense</span>
           </button>
         </div>
@@ -356,7 +429,7 @@ export default function DashboardPage() {
               value={formatINR(totalSpent)}
               icon={TrendingDown}
               accent="#ef4444"
-              sub={`${expenses.length} expenses`}
+              sub={topCategory ? `Top: ${topCategory.name}` : `${expenses.length} expenses`}
             />
             <StatCard
               index={2}
@@ -381,17 +454,34 @@ export default function DashboardPage() {
             <TrendChart data={trend} />
           </div>
 
-          <TransactionList
-            items={transactions}
-            onDelete={handleDelete}
-            deletingId={deletingId}
-            catMap={catMap}
-          />
+          <div className="card overflow-hidden">
+            <TransactionsToolbar
+              query={query}
+              setQuery={setQuery}
+              categoryFilter={categoryFilter}
+              setCategoryFilter={setCategoryFilter}
+              upiFilter={upiFilter}
+              setUpiFilter={setUpiFilter}
+              categories={categories}
+              count={filteredTransactions.length}
+              total={transactions.length}
+              onExport={handleExport}
+              canExport={filteredTransactions.length > 0}
+            />
+            <TransactionList
+              items={filteredTransactions}
+              onDelete={handleDelete}
+              onEdit={openEdit}
+              deletingId={deletingId}
+              catMap={catMap}
+              filtered={isFiltered}
+            />
+          </div>
         </>
       )}
 
       <button
-        onClick={() => setModalOpen(true)}
+        onClick={openAdd}
         className="fixed bottom-6 right-6 z-40 grid h-14 w-14 place-items-center rounded-2xl bg-accent text-white shadow-glow transition-transform hover:scale-105 active:scale-95 sm:hidden"
         aria-label="Add expense"
       >
@@ -400,9 +490,14 @@ export default function DashboardPage() {
 
       <AddEntryModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAdd}
+        onClose={() => {
+          setModalOpen(false);
+          setEditing(null);
+        }}
+        onSubmit={handleSave}
         categories={categories}
+        editing={editing}
+        lastEntry={lastEntry}
         onManageCategories={() => {
           setModalOpen(false);
           setCatOpen(true);

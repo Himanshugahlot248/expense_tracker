@@ -1,32 +1,31 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Loader2, Receipt } from "lucide-react";
+import { Trash2, Loader2, Receipt, Pencil, SearchX } from "lucide-react";
 import { UPI_MAP, FALLBACK_CATEGORY } from "@/lib/constants";
 import { getIcon } from "@/lib/icons";
 import { formatINR } from "@/lib/format";
 import EmptyState from "./ui/EmptyState";
 
-export default function TransactionList({ items, onDelete, deletingId, catMap }) {
+export default function TransactionList({ items, onDelete, onEdit, deletingId, catMap, filtered }) {
   if (!items.length) {
-    return (
-      <div className="card">
-        <EmptyState
-          icon={Receipt}
-          title="No expenses this month"
-          subtitle="Tap “Add expense” to log your first one."
-        />
-      </div>
+    return filtered ? (
+      <EmptyState
+        icon={SearchX}
+        title="No matching expenses"
+        subtitle="Try clearing the search or filters."
+      />
+    ) : (
+      <EmptyState
+        icon={Receipt}
+        title="No expenses this month"
+        subtitle="Tap “Add expense” to log your first one."
+      />
     );
   }
 
   return (
-    <div className="card overflow-hidden">
-      <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
-        <h3 className="text-sm font-semibold text-white/80">Expenses</h3>
-        <span className="text-xs text-white/40">{items.length} entries</span>
-      </div>
-      <ul className="divide-y divide-white/5">
+    <ul className="divide-y divide-white/5">
         <AnimatePresence initial={false}>
           {items.map((t) => {
             const meta = catMap?.[t.category] || FALLBACK_CATEGORY;
@@ -79,23 +78,31 @@ export default function TransactionList({ items, onDelete, deletingId, catMap })
                 <span className="text-sm font-semibold text-white">
                   −{formatINR(t.amount)}
                 </span>
-                <button
-                  onClick={() => onDelete(t)}
-                  disabled={deletingId === t.id}
-                  className="grid h-8 w-8 place-items-center rounded-lg text-white/30 opacity-0 transition-all hover:bg-danger/10 hover:text-danger group-hover:opacity-100"
-                  aria-label="Delete"
-                >
-                  {deletingId === t.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </button>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    onClick={() => onEdit(t)}
+                    className="grid h-8 w-8 place-items-center rounded-lg text-white/30 opacity-0 transition-all hover:bg-white/10 hover:text-white group-hover:opacity-100"
+                    aria-label="Edit"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => onDelete(t)}
+                    disabled={deletingId === t.id}
+                    className="grid h-8 w-8 place-items-center rounded-lg text-white/30 opacity-0 transition-all hover:bg-danger/10 hover:text-danger group-hover:opacity-100"
+                    aria-label="Delete"
+                  >
+                    {deletingId === t.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </motion.li>
             );
           })}
         </AnimatePresence>
-      </ul>
-    </div>
+    </ul>
   );
 }
